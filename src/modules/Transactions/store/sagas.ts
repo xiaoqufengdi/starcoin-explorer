@@ -4,6 +4,7 @@ import * as api from './apis';
 import * as actions from './actions';
 import * as types from './constants';
 import { POLLING_INTERVAL } from '@/utils/constants';
+import testData from './testData.json';
 
 export function* getTransaction(action: ReturnType<typeof actions.getTransaction>) {
   try {
@@ -39,8 +40,11 @@ function* watchGetPendingTransaction() {
 
 export function* getTransactionList(action: ReturnType<typeof actions.getTransactionList>) {
   try {
+    console.log('getTransactionList');
     // @ts-ignore
-    const res = yield call(withLoading, api.getTransactionList, action.type, action.payload);
+    // const res = yield call(withLoading, api.getTransactionList, action.type, action.payload);
+    // 测试数据替换
+    const res = testData;
     yield put(actions.setTransactionList(res));
     if (action.callback) {
       yield call(action.callback);
@@ -79,7 +83,9 @@ function* watchGetPendingTransactionList() {
   yield takeLatest(types.GET_PENDING_TRANSACTION_LIST, getPendingTransactionList);
 }
 
+// TODO: 取交易列表信息
 export function* getAddressTransactionList(action: ReturnType<typeof actions.getAddressTransactionList>) {
+  console.log('getAddressTransactionList');
   try {
     // @ts-ignore
     const res = yield call(withLoading, api.getAddressTransactionList, action.type, action.payload);

@@ -74,6 +74,9 @@ class TransactionSummary extends PureComponent<Props> {
       ? encoding.decodeTransactionPayload(payloadInHex)
       : [];
     const type = Object.keys(txnPayload)[0];
+    console.log('url', `/${getNetwork()}/transactions/detail/${
+      source.transaction_hash
+    }`);
     return (
       <div className={classNames(classes.root, className)}>
         {type}&nbsp;

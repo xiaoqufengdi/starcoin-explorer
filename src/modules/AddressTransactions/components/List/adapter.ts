@@ -13,11 +13,14 @@ const loadingSelector = createLoadingSelector([types.GET_ADDRESS_TRANSACTION_LIS
 const selector = createSelector(
   currentSelector,
   loadingSelector,
-  (current, loading) => ({
-    addressTransactionList: current.addressTransactionList,
-    isLoadingMore: current.isLoadingMore,
-    loading,
-  }),
+  (current, loading) => {
+    console.log('current', current);
+    return {
+      addressTransactionList: current.addressTransactionList,
+        isLoadingMore: current.isLoadingMore,
+      loading,
+    }
+  },
 );
 
 export default connect(selector, {

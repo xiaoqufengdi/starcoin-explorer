@@ -3,6 +3,8 @@ import { withTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { createStyles, withStyles } from '@mui/styles';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import { getNetwork } from '@/utils/helper';
 import Loading from '@/common/Loading';
 import ListView from '@/common/View/ListView';
 import Pagination from '@/common/View/Pagination';
@@ -37,6 +39,7 @@ interface Props extends ExternalProps, InternalProps,RoutedProps {
 
 interface IndexState {
   currentPage: number;
+  selectedRecords: Array<unknown>
 }
 
 class Index extends PureComponent<Props, IndexState> {
@@ -52,12 +55,14 @@ class Index extends PureComponent<Props, IndexState> {
     super(props);
     this.state = {
       currentPage: 1,
+      selectedRecords: [],
     };
   }
   
 
 
   componentDidMount() {
+    console.log('componentDidMount');
     const params = this.props.params;
     if(Number(params.page)){
       this.fetchListPage(Number(params.page));
@@ -69,8 +74,10 @@ class Index extends PureComponent<Props, IndexState> {
   fetchListPage = (page: number) => {
     this.props.getTransactionList({ page },()=>{
       this.setState({
-        currentPage:page
+        currentPage:page,
+        selectedRecords: []
       });
+
     });
   };
 
@@ -90,13 +97,49 @@ class Index extends PureComponent<Props, IndexState> {
     }
   };
 
+  // TODO: 更新选中记录
+  updateSelectedRecord = (transaction_hash: string,  selected: boolean)=>{
+    console.log('updateSelectedRecord', transaction_hash, selected);
+    this.setState((pre)=>{
+      let _selectedRecords: Array<unknown> = [...pre.selectedRecords];
+      if (selected) {
+        _selectedRecords.push(transaction_hash)
+      } else {
+        _selectedRecords = pre.selectedRecords.filter((val: any)=>val !== transaction_hash);
+      }
+      return {...pre,  selectedRecords: _selectedRecords}
+    })
+  }
+
+  // TODO:下载
+  upload = ()=>{
+    console.log('upload', this.state.selectedRecords);
+    if (this.state.selectedRecords.length) {
+      this.state.selectedRecords.forEach(transaction_hash=>{
+        const a = document.createElement('a');
+        console.log(`/${getNetwork()}/transactions/detail/${transaction_hash}`);
+        // a.href = `${location.host}/main${getNetwork()}/transactions/detail/${transaction_hash}`;
+        a.href = `/${getNetwork()}/transactions/detail/${transaction_hash}`;
+        console.log('a.href', a.href);
+        // a.download = transaction_hash; // `${transaction_hash}.csv`;
+        a.setAttribute('download', transaction_hash);
+        a.click();
+      })
+    } else {
+      alert('请至少选择一条记录后再下载');
+    }
+  }
+
   render() {
+    console.log('List this.props', this.props);
     const { transactionList, isLoadingMore, className, classes, t } = this.props;
     const isInitialLoad = !transactionList;
     const transactions = transactionList && transactionList.contents || [];
     const transactionsList = transactions.length ? (
       <TransactionTable
+        selectedRecords={this.state.selectedRecords}
         transactions={transactions}
+        updateSelectedRecord={this.updateSelectedRecord}
       />
     ) : (
       <CenteredView>
@@ -121,6 +164,8 @@ class Index extends PureComponent<Props, IndexState> {
             <div>
               {isInitialLoad ? <Loading /> : transactionsList}
               <div className={classes.pagerArea}>
+                {/* 分页条 */}
+                <Button onClick={ this.upload }>批量下载</Button>
                 <Pagination
                   page={this.state.currentPage}
                   pageSize={20}
